@@ -1,0 +1,9 @@
+
+
+<launch>
+  
+  <node pkg="joy" name="joy" type="joy_node"/>
+  <node pkg="teleop_ps3" name="teleop" type="teleop_ps3_node"/>
+  <node pkg="hunter_driver" name="platform_driver" type="hunter_driver_node"/>
+  
+</launch>
