@@ -86,8 +86,8 @@ void HunterDriver::velCallback(const geometry_msgs::Twist twist)
   left_speed  = ((v - (DISTANCE_BETWEEN_AXES/2)*w)/TIRE_PERIMETER) ;
   right_speed = -((v + (DISTANCE_BETWEEN_AXES/2)*w)/TIRE_PERIMETER) ; 
   
-  Left_Wheel.setTargetVelocity((int32_t)(left_speed *20));
-  Right_Wheel.setTargetVelocity((int32_t)(right_speed*20));
+  Left_Wheel.setTargetVelocity((int32_t)(left_speed *80));
+  Right_Wheel.setTargetVelocity((int32_t)(right_speed*80));
   printf("\n[DEBUG] velocity: %lf %lf\n", left_speed,right_speed);
 }
 
