@@ -23,7 +23,7 @@
 
 #define NODE_ID_RIGHT_MOTOR 0x02
 #define NODE_ID_LEFT_MOTOR  0x01
-
+#define TIRE_PERIMETER 1.303
 
 class  HunterDriver
 {
@@ -31,6 +31,7 @@ public:
     HunterDriver(nanotec::NanotecN5Port * port);
     void stop();
     void platformStateMachine(void);
+    int getHunterVelocity(void);
 private:
   int status_;
   void velCallback(const geometry_msgs::Twist twist);
@@ -43,6 +44,13 @@ private:
   nanotec::NanotecN5Driver Left_Wheel,Right_Wheel;
    
 };
+
+
+int HunterDriver::getHunterVelocity(void)
+{
+  //printf("[DEBUG] right wheel speed %lf\n",(Right_Wheel.getActualVelocity()*TIRE_PERIMETER));
+  //printf("[DEBUG] left wheel speed %lf\n",(Left_Wheel.getActualVelocity()*TIRE_PERIMETER));
+}
 
 HunterDriver::HunterDriver(nanotec::NanotecN5Port * port)
 {
@@ -69,11 +77,15 @@ void HunterDriver::stop(void)
   Right_Wheel.stateMachine(FOWARDS,QUICK_STOP, 0);
 }
 
+
+
 void HunterDriver::platformStateMachine(void)
 {
   Left_Wheel.stateMachine(FOWARDS,0,0);
   Right_Wheel.stateMachine(FOWARDS,0,0);
 }
+
+
 
 void HunterDriver::velCallback(const geometry_msgs::Twist twist)
 {
@@ -83,13 +95,18 @@ void HunterDriver::velCallback(const geometry_msgs::Twist twist)
   v = twist.linear.x;
   w = twist.angular.z;
   
-  left_speed  = ((v - (DISTANCE_BETWEEN_AXES/2)*w)/TIRE_PERIMETER) ;
-  right_speed = -((v + (DISTANCE_BETWEEN_AXES/2)*w)/TIRE_PERIMETER) ; 
+  left_speed  = -((v - (DISTANCE_BETWEEN_AXES/2)*w)) ;
+  right_speed = ((v + (DISTANCE_BETWEEN_AXES/2)*w)) ; 
   
-  Left_Wheel.setTargetVelocity((int32_t)(left_speed *80));
-  Right_Wheel.setTargetVelocity((int32_t)(right_speed*80));
-  printf("\n[DEBUG] velocity: %lf %lf\n", left_speed,right_speed);
+  //Left_Wheel.setTargetVelocity((int32_t)(left_speed *80));
+  //Right_Wheel.setTargetVelocity((int32_t)(right_speed*80));
+ 
+  Left_Wheel.setTargetVelocity((double)(left_speed/TIRE_PERIMETER));
+  Right_Wheel.setTargetVelocity((double)(right_speed/TIRE_PERIMETER));
+  
+  //printf("\n[DEBUG] velocity: %lf %lf\n", left_speed,right_speed);
 }
+
 
 
 int main(int argc, char** argv)
@@ -127,32 +144,16 @@ int main(int argc, char** argv)
     int start_order= 1;
     int cntr	  =  0;
     
-    ros::Rate r(100);
-    //Left_Wheel.setTargetVelocity(10);
+    ros::Rate r(50);
+
     
     
     while(ros::ok())
     {
       
       driver.platformStateMachine();
-      
-//        state=Left_Wheel.stateMachine(flow,stop, clearfault);
-//        if(state == CANOPEN_SWITCH_ON_DISABLED && start_order == HOLD)
-// 	 flow =HOLD;
-      
-       //if(state == CANOPEN_OPERATION_ENABLED)
-       //{
-       //	 start_order = 0;
-       //  stop = QUICK_STOP;
-	 
-       //}
-       
-        
-	
-        ros::spinOnce();
-	
-	
-	//printf("\nActual Velocity : %d\n",Left_Wheel.getActualVelocity());
+      driver.getHunterVelocity();
+      ros::spinOnce();
     }
     driver.stop();
     //Left_Wheel.stop();
